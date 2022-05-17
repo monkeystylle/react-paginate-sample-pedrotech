@@ -1,53 +1,68 @@
 import styled from 'styled-components';
 import type { NextPage } from 'next';
 import ReactPaginate from 'react-paginate';
+import JsonData from '../MOCK_DATA.json';
+
+import { useState, useEffect } from 'react';
 
 const Home: NextPage = () => {
+  const [users, setUsers] = useState(JsonData.slice(0, 50));
+  const [pageNumber, setPageNumber] = useState(0);
+
+  const usersPerPage = 10;
+  const pagesVisited = pageNumber * usersPerPage;
+
+  const displayUsers = users
+    .slice(pagesVisited, pagesVisited + usersPerPage)
+    .map(user => (
+      <UsersCard key={user.id}>
+        <h5>{user.firstName}</h5>
+        <h5>{user.lastName}</h5>
+        <h6>{user.email}</h6>
+      </UsersCard>
+    ));
+
+  const pageCount = Math.ceil(users.length / usersPerPage);
+
+  const handlePageChange = ({ selected }) => {
+    setPageNumber(selected);
+  };
+
   return (
     <>
-      <div className="commentBox">
-        <MyPaginate pageCount={20} onPageChange={() => alert('atut!')} />
-        <h1>---------------- </h1>
-        {/* Here the pagination component is styled thanks to Bootstrap
-        classes. See https://getbootstrap.com/docs/5.1/components/pagination */}
-        <nav aria-label="Page navigation comments" className="mt-4">
-          <ReactPaginate
-            previousLabel="previous"
-            nextLabel="next"
-            breakLabel="..."
-            breakClassName="page-item"
-            breakLinkClassName="page-link"
-            pageCount={20}
-            pageRangeDisplayed={4}
-            marginPagesDisplayed={2}
-            onPageChange={() => alert('minatut ka')}
-            containerClassName="pagination justify-content-center"
-            pageClassName="page-item"
-            pageLinkClassName="page-link"
-            previousClassName="page-item"
-            previousLinkClassName="page-link"
-            nextClassName="page-item"
-            nextLinkClassName="page-link"
-            activeClassName="active"
-            // eslint-disable-next-line no-unused-vars
-            hrefBuilder={(page, pageCount, selected) =>
-              page >= 1 && page <= pageCount ? `/page/${page}` : '#'
-            }
-            hrefAllControls
-            onClick={clickEvent => {
-              console.log('onClick', clickEvent);
-              // Return false to prevent standard page change,
-              // return false; // --> Will do nothing.
-              // return a number to choose the next page,
-              // return 4; --> Will go to page 5 (index 4)
-              // return nothing (undefined) to let standard behavior take place.
-            }}
-          />
-        </nav>
-      </div>
+      <UsersWrapper>{displayUsers}</UsersWrapper>
+      <PaginationWrapper>
+        <MyPaginate pageCount={pageCount} onPageChange={handlePageChange} />
+      </PaginationWrapper>
     </>
   );
 };
+
+//Item Styles
+
+const UsersWrapper = styled.div`
+  padding: 64px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+`;
+const UsersCard = styled.div`
+  border: 1px solid gray;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+`;
+
+//Pagination Styles
+
+const PaginationWrapper = styled.div`
+  padding: 32px 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+`;
 
 const MyPaginate = styled(ReactPaginate).attrs({
   // You can redifine classes here, if you want.
